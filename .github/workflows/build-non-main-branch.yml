@@ -1,9 +1,7 @@
 name: Build for Non-Main Branches
 
 on:
-  push:
-    branches-ignore:
-      - main
+  workflow_dispatch:
 
 jobs:
   setup:
