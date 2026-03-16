@@ -65,6 +65,7 @@
                 type="select"
                 :label="tt('Accounting Mode')"
                 v-model:value="form.accountingMode"
+                :disabled="hasLinkedPurchaseTransaction"
             >
                 <option :value="InstallmentAccountingModes.PurchaseRecognized">
                     Purchase Recognized
@@ -73,6 +74,13 @@
                     Repayment Recognized
                 </option>
             </f7-list-input>
+            <f7-list-input
+                type="text"
+                :label="tt('Linked Purchase Transaction')"
+                v-model:value="form.purchaseTransactionId"
+                readonly
+                v-if="hasLinkedPurchaseTransaction"
+            ></f7-list-input>
             <f7-list-input
                 type="datetime-local"
                 :label="tt('Purchase Time')"
@@ -149,6 +157,7 @@
                 <span>{{ tt("Generate Purchase Transaction") }}</span>
                 <f7-toggle
                     :checked="form.generatePurchaseTransaction"
+                    :disabled="hasLinkedPurchaseTransaction"
                     @toggle:change="form.generatePurchaseTransaction = $event"
                 ></f7-toggle>
             </f7-list-item>
@@ -310,6 +319,7 @@ import {
     type InstallmentPlanForm,
 } from "@/models/installment.ts";
 import {
+    applyInstallmentPrefillFromQuery,
     generateInstallmentDueDatesByAccountRule,
     generateInstallmentItems,
     installmentFormFromResponse,
@@ -332,6 +342,9 @@ const form = reactive<InstallmentPlanForm>(createEmptyInstallmentPlanForm());
 const errorMessage = ref<string>("");
 const submitting = ref<boolean>(false);
 const isEdit = computed<boolean>(() => !!props.f7route.query["id"]);
+const hasLinkedPurchaseTransaction = computed<boolean>(
+    () => !!form.purchaseTransactionId && !form.generatePurchaseTransaction,
+);
 const providerOptions = computed(() => InstallmentProviders);
 const liabilityAccountOptions = computed<Account[]>(() =>
     accountsStore.allVisiblePlainAccounts.filter(
@@ -529,6 +542,7 @@ onMounted(() => {
             const id = props.f7route.query["id"];
 
             if (!id) {
+                applyInstallmentPrefillFromQuery(form, props.f7route.query);
                 regenerateItems();
                 return;
             }

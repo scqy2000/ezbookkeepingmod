@@ -86,7 +86,15 @@
                                 item-value="value"
                                 v-model="form.accountingMode"
                                 :label="tt('Accounting Mode')"
+                                :disabled="hasLinkedPurchaseTransaction"
                             ></v-select>
+                        </v-col>
+                        <v-col cols="12" md="4" v-if="hasLinkedPurchaseTransaction">
+                            <v-text-field
+                                v-model="form.purchaseTransactionId"
+                                :label="tt('Linked Purchase Transaction')"
+                                readonly
+                            ></v-text-field>
                         </v-col>
                         <v-col cols="12" md="4">
                             <v-text-field
@@ -176,6 +184,7 @@
                                 color="primary"
                                 v-model="form.generatePurchaseTransaction"
                                 :label="tt('Generate Purchase Transaction')"
+                                :disabled="hasLinkedPurchaseTransaction"
                             ></v-switch>
                         </v-col>
                         <v-col
@@ -392,6 +401,7 @@ import {
     type InstallmentPlanForm,
 } from "@/models/installment.ts";
 import {
+    applyInstallmentPrefillFromQuery,
     generateInstallmentDueDatesByAccountRule,
     generateInstallmentItems,
     installmentFormFromResponse,
@@ -413,6 +423,9 @@ const errorMessage = ref<string>("");
 const form = reactive<InstallmentPlanForm>(createEmptyInstallmentPlanForm());
 
 const isEdit = computed<boolean>(() => !!route.query["id"]);
+const hasLinkedPurchaseTransaction = computed<boolean>(
+    () => !!form.purchaseTransactionId && !form.generatePurchaseTransaction,
+);
 const providerOptions = computed(() => InstallmentProviders);
 const accountingModeOptions = computed(() => [
     {
@@ -551,6 +564,7 @@ function loadInitialData(): void {
             const planId = route.query["id"];
 
             if (!planId) {
+                applyInstallmentPrefillFromQuery(form, route.query);
                 regenerateItems();
                 loading.value = false;
                 return;

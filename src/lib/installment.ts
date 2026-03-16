@@ -1,6 +1,7 @@
 import {
     createEmptyInstallmentAccountRuleForm,
     createEmptyInstallmentPlanForm,
+    InstallmentAccountingModes,
     InstallmentDueDateSources,
     InstallmentStorageModes,
     type InstallmentAccountRuleForm,
@@ -12,6 +13,66 @@ import {
     type InstallmentPlanModifyRequest,
     type InstallmentPlanRequest,
 } from "@/models/installment.ts";
+import type { Account } from "@/models/account.ts";
+import type { Transaction } from "@/models/transaction.ts";
+import { TransactionType } from "@/core/transaction.ts";
+
+type InstallmentPrefillQuery = Record<
+    string,
+    string | null | undefined | (string | null)[]
+>;
+
+function getQueryStringValue(
+    query: InstallmentPrefillQuery,
+    key: string,
+): string {
+    const value = query[key];
+
+    if (Array.isArray(value)) {
+        return value[0] || "";
+    }
+
+    if (typeof value === "string") {
+        return value;
+    }
+
+    return "";
+}
+
+function getInstallmentPrefillPurchaseDatetime(
+    purchaseTime: number,
+    purchaseUtcOffset: number,
+): string {
+    const date = new Date((purchaseTime + purchaseUtcOffset * 60) * 1000);
+    const year = date.getUTCFullYear();
+    const month = `${date.getUTCMonth() + 1}`.padStart(2, "0");
+    const day = `${date.getUTCDate()}`.padStart(2, "0");
+    const hour = `${date.getUTCHours()}`.padStart(2, "0");
+    const minute = `${date.getUTCMinutes()}`.padStart(2, "0");
+
+    return `${year}-${month}-${day}T${hour}:${minute}`;
+}
+
+function getInstallmentPrefillTitle(
+    transaction: Transaction,
+    liabilityAccount?: Account | null,
+): string {
+    const trimmedComment = (transaction.comment || "").trim();
+
+    if (trimmedComment) {
+        return trimmedComment;
+    }
+
+    if (transaction.category?.name) {
+        return transaction.category.name;
+    }
+
+    if (liabilityAccount?.name) {
+        return liabilityAccount.name;
+    }
+
+    return "Installment Purchase";
+}
 
 function getMonthlyDateString(
     firstDueDate: string,
@@ -162,6 +223,94 @@ export function normalizeInstallmentItems(
             Math.trunc((item.principalAmount || 0) + (item.feeAmount || 0)),
         ),
     }));
+}
+
+export function canCreateInstallmentFromTransaction(
+    transaction: Transaction,
+    liabilityAccount?: Account | null,
+): boolean {
+    return (
+        transaction.type === TransactionType.Expense &&
+        transaction.sourceAmount > 0 &&
+        !!liabilityAccount?.isLiability
+    );
+}
+
+export function getInstallmentCreatePathFromTransaction(
+    transaction: Transaction,
+    liabilityAccount?: Account | null,
+): string {
+    if (!canCreateInstallmentFromTransaction(transaction, liabilityAccount)) {
+        return "/installment/add";
+    }
+
+    const query = new URLSearchParams({
+        fromTransaction: "true",
+        purchaseTransactionId: transaction.id,
+        liabilityAccountId: transaction.sourceAccountId,
+        purchaseCategoryId: transaction.categoryId || "",
+        title: getInstallmentPrefillTitle(transaction, liabilityAccount),
+        principalTotal: `${transaction.sourceAmount}`,
+        purchaseTime: `${transaction.time}`,
+        purchaseUtcOffset: `${transaction.utcOffset}`,
+    });
+
+    return `/installment/add?${query.toString()}`;
+}
+
+export function applyInstallmentPrefillFromQuery(
+    form: InstallmentPlanForm,
+    query: InstallmentPrefillQuery,
+): boolean {
+    if (getQueryStringValue(query, "fromTransaction") !== "true") {
+        return false;
+    }
+
+    const purchaseTransactionId = getQueryStringValue(
+        query,
+        "purchaseTransactionId",
+    );
+    const liabilityAccountId = getQueryStringValue(query, "liabilityAccountId");
+    const purchaseCategoryId = getQueryStringValue(query, "purchaseCategoryId");
+    const title = getQueryStringValue(query, "title");
+    const principalTotal = parseInt(
+        getQueryStringValue(query, "principalTotal"),
+        10,
+    );
+    const purchaseTime = parseInt(getQueryStringValue(query, "purchaseTime"), 10);
+    const purchaseUtcOffset = parseInt(
+        getQueryStringValue(query, "purchaseUtcOffset"),
+        10,
+    );
+
+    form.accountingMode = InstallmentAccountingModes.PurchaseRecognized;
+    form.purchaseTransactionId = purchaseTransactionId;
+    form.generatePurchaseTransaction = false;
+
+    if (liabilityAccountId) {
+        form.liabilityAccountId = liabilityAccountId;
+    }
+
+    if (purchaseCategoryId) {
+        form.purchaseCategoryId = purchaseCategoryId;
+    }
+
+    if (title) {
+        form.title = title;
+    }
+
+    if (!Number.isNaN(principalTotal) && principalTotal > 0) {
+        form.principalTotal = principalTotal;
+    }
+
+    if (!Number.isNaN(purchaseTime)) {
+        form.purchaseDatetime = getInstallmentPrefillPurchaseDatetime(
+            purchaseTime,
+            Number.isNaN(purchaseUtcOffset) ? 0 : purchaseUtcOffset,
+        );
+    }
+
+    return true;
 }
 
 export function installmentFormFromResponse(

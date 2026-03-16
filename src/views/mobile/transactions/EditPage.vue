@@ -463,6 +463,7 @@
                 <f7-actions-button @click="duplicate(true, false)">{{ tt('Duplicate (With Time)') }}</f7-actions-button>
                 <f7-actions-button @click="duplicate(false, true)" v-if="transaction.geoLocation">{{ tt('Duplicate (With Geographic Location)') }}</f7-actions-button>
                 <f7-actions-button @click="duplicate(true, true)" v-if="transaction.geoLocation">{{ tt('Duplicate (With Time and Geographic Location)') }}</f7-actions-button>
+                <f7-actions-button @click="createInstallment" v-if="canCreateInstallment">{{ tt('Create Installment') }}</f7-actions-button>
             </f7-actions-group>
             <f7-actions-group>
                 <f7-actions-button bold close>{{ tt('Cancel') }}</f7-actions-button>
@@ -537,6 +538,10 @@ import {
     parseDateTimeFromUnixTimeWithTimezoneOffset
 } from '@/lib/datetime.ts';
 import { formatCoordinate } from '@/lib/coordinate.ts';
+import {
+    canCreateInstallmentFromTransaction,
+    getInstallmentCreatePathFromTransaction
+} from '@/lib/installment.ts';
 import { generateRandomUUID } from '@/lib/misc.ts';
 import { getTransactionPrimaryCategoryName, getTransactionSecondaryCategoryName } from '@/lib/category.ts';
 import { type SetTransactionOptions } from '@/lib/transaction.ts';
@@ -649,6 +654,14 @@ const showTransactionTagSheet = ref<boolean>(false);
 const showTransactionPictures = ref<boolean>(pageTypeAndMode?.type === TransactionEditPageType.Transaction
     && (pageTypeAndMode?.mode === TransactionEditPageMode.Add || pageTypeAndMode?.mode === TransactionEditPageMode.Edit)
     && settingsStore.appSettings.alwaysShowTransactionPicturesInMobileTransactionEditPage);
+const installmentLiabilityAccount = computed(() =>
+    accountsStore.allVisiblePlainAccounts.find((account) => account.id === transaction.value.sourceAccountId)
+);
+const canCreateInstallment = computed<boolean>(() =>
+    pageTypeAndMode?.type === TransactionEditPageType.Transaction
+        && mode.value === TransactionEditPageMode.View
+        && canCreateInstallmentFromTransaction(transaction.value, installmentLiabilityAccount.value)
+);
 
 const sourceAmountClass = computed<Record<string, boolean>>(() => {
     const classes: Record<string, boolean> = {
@@ -1291,6 +1304,20 @@ function viewOrRemovePicture(pictureInfo: TransactionPictureInfoBasicResponse): 
 
 function duplicate(withTime?: boolean, withGeoLocation?: boolean): void {
     props.f7router.navigate(`/transaction/add?id=${transaction.value.id}&type=${transaction.value.type}&withTime=${withTime ?? false}&withGeoLocation=${withGeoLocation ?? false}`);
+}
+
+function createInstallment(): void {
+    if (!canCreateInstallment.value) {
+        return;
+    }
+
+    showMoreActionSheet.value = false;
+    props.f7router.navigate(
+        getInstallmentCreatePathFromTransaction(
+            transaction.value,
+            installmentLiabilityAccount.value,
+        ),
+    );
 }
 
 function onPageAfterIn(): void {
