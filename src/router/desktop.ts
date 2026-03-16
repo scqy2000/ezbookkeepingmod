@@ -27,6 +27,9 @@ import TransactionCategoryListPage from '@/views/desktop/categories/ListPage.vue
 import TransactionTagListPage from '@/views/desktop/tags/ListPage.vue';
 
 import TransactionTemplateListPage from '@/views/desktop/templates/ListPage.vue';
+import InstallmentListPage from '@/views/desktop/installments/ListPage.vue';
+import InstallmentFormPage from '@/views/desktop/installments/FormPage.vue';
+import InstallmentDetailPage from '@/views/desktop/installments/DetailPage.vue';
 
 import UserSettingsPage from '@/views/desktop/user/UserSettingsPage.vue';
 import AppSettingsPage from '@/views/desktop/app/AppSettingsPage.vue';
@@ -180,6 +183,21 @@ const router = createRouter({
                     props: {
                         initType: TemplateType.Schedule.type
                     }
+                },
+                {
+                    path: '/installment/list',
+                    component: InstallmentListPage,
+                    beforeEnter: checkLogin
+                },
+                {
+                    path: '/installment/add',
+                    component: InstallmentFormPage,
+                    beforeEnter: checkLogin
+                },
+                {
+                    path: '/installment/detail',
+                    component: InstallmentDetailPage,
+                    beforeEnter: checkLogin
                 },
                 {
                     path: '/exchange_rates',
