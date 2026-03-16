@@ -16,6 +16,7 @@ type MCPQueryAllAccountsResponse struct {
 	CheckingAccounts             []string `json:"checkingAccounts,omitempty" jsonschema_description:"List of checking account names"`
 	SavingsAccounts              []string `json:"savingsAccounts,omitempty" jsonschema_description:"List of savings account names"`
 	CreditCardAccounts           []string `json:"creditCardAccounts,omitempty" jsonschema_description:"List of credit card account names"`
+	OnlineFinancialAccounts      []string `json:"onlineFinancialAccounts,omitempty" jsonschema_description:"List of online financial service account names"`
 	VirtualAccounts              []string `json:"virtualAccounts,omitempty" jsonschema_description:"List of virtual account names"`
 	DebtAccounts                 []string `json:"debtAccounts,omitempty" jsonschema_description:"List of debt account names"`
 	ReceivableAccounts           []string `json:"receivableAccounts,omitempty" jsonschema_description:"List of receivable account names"`
@@ -100,6 +101,12 @@ func (h *mcpQueryAllAccountsToolHandler) createNewMCPQueryAllAccountsResponse(c 
 			}
 
 			response.CreditCardAccounts = append(response.CreditCardAccounts, account.Name)
+		} else if account.Category == models.ACCOUNT_CATEGORY_ONLINE_FINANCIAL {
+			if response.OnlineFinancialAccounts == nil {
+				response.OnlineFinancialAccounts = make([]string, 0)
+			}
+
+			response.OnlineFinancialAccounts = append(response.OnlineFinancialAccounts, account.Name)
 		} else if account.Category == models.ACCOUNT_CATEGORY_VIRTUAL {
 			if response.VirtualAccounts == nil {
 				response.VirtualAccounts = make([]string, 0)

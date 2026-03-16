@@ -9,7 +9,7 @@
         </f7-navbar>
 
         <f7-list strong inset dividers v-if="loading">
-            <f7-list-item title="Loading..."></f7-list-item>
+            <f7-list-item :title="`${tt('Loading')}...`"></f7-list-item>
         </f7-list>
 
         <f7-block strong inset v-else-if="errorMessage">{{ errorMessage }}</f7-block>
@@ -54,7 +54,7 @@ function loadPlans(done?: () => void): void {
         const data = response.data;
 
         if (!data || !data.success || !data.result) {
-            errorMessage.value = 'Unable to retrieve installment plans';
+            errorMessage.value = tt('Unable to retrieve installment plans');
             loading.value = false;
             done?.();
             return;
@@ -64,7 +64,7 @@ function loadPlans(done?: () => void): void {
         loading.value = false;
         done?.();
     }).catch(error => {
-        errorMessage.value = error?.response?.data?.errorMessage || error?.message || 'Unable to retrieve installment plans';
+        errorMessage.value = error?.response?.data?.errorMessage || error?.message || tt('Unable to retrieve installment plans');
         loading.value = false;
         done?.();
     });

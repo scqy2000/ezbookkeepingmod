@@ -101,7 +101,7 @@ function loadPlan(): void {
     const id = `${route.query['id'] || ''}`;
 
     if (!id) {
-        errorMessage.value = 'Installment plan id is invalid';
+        errorMessage.value = tt('Installment plan id is invalid');
         return;
     }
 
@@ -112,13 +112,13 @@ function loadPlan(): void {
         const data = response.data;
 
         if (!data || !data.success || !data.result) {
-            errorMessage.value = 'Unable to retrieve installment plan';
+            errorMessage.value = tt('Unable to retrieve installment plan');
             return;
         }
 
         plan.value = data.result;
     }).catch(error => {
-        errorMessage.value = error?.response?.data?.errorMessage || error?.message || 'Unable to retrieve installment plan';
+        errorMessage.value = error?.response?.data?.errorMessage || error?.message || tt('Unable to retrieve installment plan');
     });
 }
 
@@ -149,20 +149,20 @@ function pay(): void {
         paying.value = false;
         loadPlan();
     }).catch(error => {
-        errorMessage.value = error?.response?.data?.errorMessage || error?.message || 'Unable to pay installment item';
+        errorMessage.value = error?.response?.data?.errorMessage || error?.message || tt('Unable to pay installment item');
         paying.value = false;
     });
 }
 
 function unpay(itemId: string): void {
-    if (!window.confirm('Unpay this installment item?')) {
+    if (!window.confirm(tt('Unpay this installment item?'))) {
         return;
     }
 
     services.unpayInstallmentItem({ itemId }).then(() => {
         loadPlan();
     }).catch(error => {
-        errorMessage.value = error?.response?.data?.errorMessage || error?.message || 'Unable to unpay installment item';
+        errorMessage.value = error?.response?.data?.errorMessage || error?.message || tt('Unable to unpay installment item');
     });
 }
 

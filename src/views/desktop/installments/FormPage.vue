@@ -426,7 +426,12 @@ const isEdit = computed<boolean>(() => !!route.query["id"]);
 const hasLinkedPurchaseTransaction = computed<boolean>(
     () => !!form.purchaseTransactionId && !form.generatePurchaseTransaction,
 );
-const providerOptions = computed(() => InstallmentProviders);
+const providerOptions = computed(() =>
+    InstallmentProviders.map((provider) => ({
+        ...provider,
+        name: provider.key === "custom" ? tt("Custom") : provider.name,
+    })),
+);
 const accountingModeOptions = computed(() => [
     {
         name: tt("Purchase Recognized"),
@@ -576,8 +581,9 @@ function loadInitialData(): void {
                     const data = response.data;
 
                     if (!data || !data.success || !data.result) {
-                        errorMessage.value =
-                            "Unable to retrieve installment plan";
+                        errorMessage.value = tt(
+                            "Unable to retrieve installment plan",
+                        );
                         loading.value = false;
                         return;
                     }
@@ -590,7 +596,7 @@ function loadInitialData(): void {
                     errorMessage.value =
                         error?.response?.data?.errorMessage ||
                         error?.message ||
-                        "Unable to retrieve installment plan";
+                        tt("Unable to retrieve installment plan");
                     loading.value = false;
                 });
         })
@@ -598,7 +604,7 @@ function loadInitialData(): void {
             errorMessage.value =
                 error?.response?.data?.errorMessage ||
                 error?.message ||
-                "Unable to load page data";
+                tt("Unable to load page data");
             loading.value = false;
         });
 }
@@ -653,8 +659,8 @@ function save(): void {
 
                 if (!data || !data.success || !data.result) {
                     errorMessage.value = isEdit.value
-                        ? "Unable to save installment plan"
-                        : "Unable to add installment plan";
+                        ? tt("Unable to save installment plan")
+                        : tt("Unable to add installment plan");
                     submitting.value = false;
                     return;
                 }
@@ -666,7 +672,7 @@ function save(): void {
                 errorMessage.value =
                     error?.response?.data?.errorMessage ||
                     error?.message ||
-                    "Unable to save installment plan";
+                    tt("Unable to save installment plan");
                 submitting.value = false;
             });
     };
@@ -687,7 +693,7 @@ function save(): void {
                 errorMessage.value =
                     error?.response?.data?.errorMessage ||
                     error?.message ||
-                    "Unable to save installment account rule";
+                    tt("Unable to save installment account rule");
                 submitting.value = false;
             });
         return;

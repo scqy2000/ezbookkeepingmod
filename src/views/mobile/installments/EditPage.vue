@@ -68,10 +68,10 @@
                 :disabled="hasLinkedPurchaseTransaction"
             >
                 <option :value="InstallmentAccountingModes.PurchaseRecognized">
-                    Purchase Recognized
+                    {{ tt('Purchase Recognized') }}
                 </option>
                 <option :value="InstallmentAccountingModes.RepaymentRecognized">
-                    Repayment Recognized
+                    {{ tt('Repayment Recognized') }}
                 </option>
             </f7-list-input>
             <f7-list-input
@@ -107,10 +107,10 @@
                 v-model:value="form.dueDateSource"
             >
                 <option :value="InstallmentDueDateSources.PlanRule">
-                    Plan Rule
+                    {{ tt('Plan Rule') }}
                 </option>
                 <option :value="InstallmentDueDateSources.AccountRule">
-                    Account Rule
+                    {{ tt('Account Rule') }}
                 </option>
             </f7-list-input>
             <f7-list-input
@@ -119,12 +119,12 @@
                 v-model:value="form.storageMode"
             >
                 <option :value="InstallmentStorageModes.PlanItemsOnly">
-                    Plan Items Only
+                    {{ tt('Plan Items Only') }}
                 </option>
                 <option
                     :value="InstallmentStorageModes.GeneratedScheduleTemplates"
                 >
-                    Generated Scheduled Templates
+                    {{ tt('Generated Scheduled Templates') }}
                 </option>
             </f7-list-input>
             <f7-list-input
@@ -142,11 +142,11 @@
                 :label="tt('Generation Mode')"
                 v-model:value="form.distributionMode"
             >
-                <option value="equal_total">Equal Total</option>
+                <option value="equal_total">{{ tt('Equal Total') }}</option>
                 <option value="equal_principal_fee">
-                    Equal Principal And Fee
+                    {{ tt('Equal Principal And Fee') }}
                 </option>
-                <option value="custom">Custom</option>
+                <option value="custom">{{ tt('Custom') }}</option>
             </f7-list-input>
             <f7-list-item
                 v-if="
@@ -345,7 +345,12 @@ const isEdit = computed<boolean>(() => !!props.f7route.query["id"]);
 const hasLinkedPurchaseTransaction = computed<boolean>(
     () => !!form.purchaseTransactionId && !form.generatePurchaseTransaction,
 );
-const providerOptions = computed(() => InstallmentProviders);
+const providerOptions = computed(() =>
+    InstallmentProviders.map((provider) => ({
+        ...provider,
+        name: provider.key === "custom" ? tt("Custom") : provider.name,
+    })),
+);
 const liabilityAccountOptions = computed<Account[]>(() =>
     accountsStore.allVisiblePlainAccounts.filter(
         (account) => account.isLiability,
@@ -456,7 +461,7 @@ function save(): void {
                 const data = response.data;
 
                 if (!data || !data.success || !data.result) {
-                    errorMessage.value = "Unable to save installment plan";
+                    errorMessage.value = tt("Unable to save installment plan");
                     submitting.value = false;
                     return;
                 }
@@ -470,7 +475,7 @@ function save(): void {
                 errorMessage.value =
                     error?.response?.data?.errorMessage ||
                     error?.message ||
-                    "Unable to save installment plan";
+                    tt("Unable to save installment plan");
                 submitting.value = false;
             });
     };
@@ -491,7 +496,7 @@ function save(): void {
                 errorMessage.value =
                     error?.response?.data?.errorMessage ||
                     error?.message ||
-                    "Unable to save installment account rule";
+                    tt("Unable to save installment account rule");
                 submitting.value = false;
             });
         return;
@@ -554,7 +559,7 @@ onMounted(() => {
 
                     if (!data || !data.success || !data.result) {
                         errorMessage.value =
-                            "Unable to retrieve installment plan";
+                            tt("Unable to retrieve installment plan");
                         return;
                     }
 
@@ -565,14 +570,14 @@ onMounted(() => {
                     errorMessage.value =
                         error?.response?.data?.errorMessage ||
                         error?.message ||
-                        "Unable to retrieve installment plan";
+                        tt("Unable to retrieve installment plan");
                 });
         })
         .catch((error) => {
             errorMessage.value =
                 error?.response?.data?.errorMessage ||
                 error?.message ||
-                "Unable to load page data";
+                tt("Unable to load page data");
         });
 });
 

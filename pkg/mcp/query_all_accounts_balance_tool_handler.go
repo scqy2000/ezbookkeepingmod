@@ -17,6 +17,7 @@ type MCPQueryAllAccountsBalanceResponse struct {
 	CheckingAccounts             []*MCPAccountBalanceInfo `json:"checkingAccounts,omitempty" jsonschema_description:"List of checking account balances"`
 	SavingsAccounts              []*MCPAccountBalanceInfo `json:"savingsAccounts,omitempty" jsonschema_description:"List of savings account balances"`
 	CreditCardAccounts           []*MCPAccountBalanceInfo `json:"creditCardAccounts,omitempty" jsonschema_description:"List of credit card account outstanding balances"`
+	OnlineFinancialAccounts      []*MCPAccountBalanceInfo `json:"onlineFinancialAccounts,omitempty" jsonschema_description:"List of online financial service account outstanding balances"`
 	VirtualAccounts              []*MCPAccountBalanceInfo `json:"virtualAccounts,omitempty" jsonschema_description:"List of virtual account balances"`
 	DebtAccounts                 []*MCPAccountBalanceInfo `json:"debtAccounts,omitempty" jsonschema_description:"List of debt account outstanding balances"`
 	ReceivableAccounts           []*MCPAccountBalanceInfo `json:"receivableAccounts,omitempty" jsonschema_description:"List of receivable account balances"`
@@ -110,6 +111,12 @@ func (h *mcpQueryAllAccountsBalanceToolHandler) createNewMCPQueryAllAccountsBala
 			}
 
 			response.CreditCardAccounts = append(response.CreditCardAccounts, h.createNewMCPAccountBalanceInfo(account))
+		} else if account.Category == models.ACCOUNT_CATEGORY_ONLINE_FINANCIAL {
+			if response.OnlineFinancialAccounts == nil {
+				response.OnlineFinancialAccounts = make([]*MCPAccountBalanceInfo, 0)
+			}
+
+			response.OnlineFinancialAccounts = append(response.OnlineFinancialAccounts, h.createNewMCPAccountBalanceInfo(account))
 		} else if account.Category == models.ACCOUNT_CATEGORY_VIRTUAL {
 			if response.VirtualAccounts == nil {
 				response.VirtualAccounts = make([]*MCPAccountBalanceInfo, 0)

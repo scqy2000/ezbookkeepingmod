@@ -157,12 +157,12 @@ func (a *AccountsApi) AccountCreateHandler(c *core.WebContext) (any, *errs.Error
 		return nil, errs.ErrClientTimezoneOffsetInvalid
 	}
 
-	if accountCreateReq.Category < models.ACCOUNT_CATEGORY_CASH || accountCreateReq.Category > models.ACCOUNT_CATEGORY_CERTIFICATE_OF_DEPOSIT {
+	if accountCreateReq.Category < models.ACCOUNT_CATEGORY_CASH || accountCreateReq.Category > models.ACCOUNT_CATEGORY_ONLINE_FINANCIAL {
 		log.Warnf(c, "[accounts.AccountCreateHandler] account category invalid, category is %d", accountCreateReq.Category)
 		return nil, errs.ErrAccountCategoryInvalid
 	}
 
-	if accountCreateReq.Category != models.ACCOUNT_CATEGORY_CREDIT_CARD && accountCreateReq.CreditCardStatementDate != 0 {
+	if !accountCreateReq.Category.SupportsStatementDate() && accountCreateReq.CreditCardStatementDate != 0 {
 		log.Warnf(c, "[accounts.AccountCreateHandler] cannot set statement date with category \"%d\"", accountCreateReq.Category)
 		return nil, errs.ErrCannotSetStatementDateForNonCreditCard
 	}
@@ -322,12 +322,12 @@ func (a *AccountsApi) AccountModifyHandler(c *core.WebContext) (any, *errs.Error
 		return nil, errs.ErrClientTimezoneOffsetInvalid
 	}
 
-	if accountModifyReq.Category < models.ACCOUNT_CATEGORY_CASH || accountModifyReq.Category > models.ACCOUNT_CATEGORY_CERTIFICATE_OF_DEPOSIT {
+	if accountModifyReq.Category < models.ACCOUNT_CATEGORY_CASH || accountModifyReq.Category > models.ACCOUNT_CATEGORY_ONLINE_FINANCIAL {
 		log.Warnf(c, "[accounts.AccountModifyHandler] account category invalid, category is %d", accountModifyReq.Category)
 		return nil, errs.ErrAccountCategoryInvalid
 	}
 
-	if accountModifyReq.Category != models.ACCOUNT_CATEGORY_CREDIT_CARD && accountModifyReq.CreditCardStatementDate != 0 {
+	if !accountModifyReq.Category.SupportsStatementDate() && accountModifyReq.CreditCardStatementDate != 0 {
 		log.Warnf(c, "[accounts.AccountModifyHandler] cannot set statement date with category \"%d\"", accountModifyReq.Category)
 		return nil, errs.ErrCannotSetStatementDateForNonCreditCard
 	}
@@ -711,7 +711,7 @@ func (a *AccountsApi) SubAccountDeleteHandler(c *core.WebContext) (any, *errs.Er
 func (a *AccountsApi) createNewAccountModel(uid int64, accountCreateReq *models.AccountCreateRequest, isSubAccount bool, order int32) *models.Account {
 	accountExtend := &models.AccountExtend{}
 
-	if !isSubAccount && accountCreateReq.Category == models.ACCOUNT_CATEGORY_CREDIT_CARD {
+	if !isSubAccount && accountCreateReq.Category.SupportsStatementDate() {
 		accountExtend.CreditCardStatementDate = &accountCreateReq.CreditCardStatementDate
 	}
 
@@ -767,7 +767,7 @@ func (a *AccountsApi) createSubAccountModels(uid int64, accountCreateReq *models
 func (a *AccountsApi) getToUpdateAccount(uid int64, accountModifyReq *models.AccountModifyRequest, oldAccount *models.Account, isSubAccount bool) *models.Account {
 	newAccountExtend := &models.AccountExtend{}
 
-	if !isSubAccount && accountModifyReq.Category == models.ACCOUNT_CATEGORY_CREDIT_CARD {
+	if !isSubAccount && accountModifyReq.Category.SupportsStatementDate() {
 		newAccountExtend.CreditCardStatementDate = &accountModifyReq.CreditCardStatementDate
 	}
 

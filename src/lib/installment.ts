@@ -71,7 +71,7 @@ function getInstallmentPrefillTitle(
         return liabilityAccount.name;
     }
 
-    return "Installment Purchase";
+    return "";
 }
 
 function getMonthlyDateString(

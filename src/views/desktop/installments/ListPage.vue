@@ -76,7 +76,7 @@ function loadPlans(): void {
         const data = response.data;
 
         if (!data || !data.success || !data.result) {
-            errorMessage.value = 'Unable to retrieve installment plans';
+            errorMessage.value = tt('Unable to retrieve installment plans');
             loading.value = false;
             return;
         }
@@ -84,20 +84,20 @@ function loadPlans(): void {
         plans.value = data.result;
         loading.value = false;
     }).catch(error => {
-        errorMessage.value = error?.response?.data?.errorMessage || error?.message || 'Unable to retrieve installment plans';
+        errorMessage.value = error?.response?.data?.errorMessage || error?.message || tt('Unable to retrieve installment plans');
         loading.value = false;
     });
 }
 
 function remove(id: string): void {
-    if (!window.confirm('Delete this installment plan?')) {
+    if (!window.confirm(tt('Delete this installment plan?'))) {
         return;
     }
 
     services.deleteInstallmentPlan({ id }).then(() => {
         loadPlans();
     }).catch(error => {
-        errorMessage.value = error?.response?.data?.errorMessage || error?.message || 'Unable to delete installment plan';
+        errorMessage.value = error?.response?.data?.errorMessage || error?.message || tt('Unable to delete installment plan');
     });
 }
 
