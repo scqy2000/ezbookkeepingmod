@@ -19,12 +19,14 @@ const (
 	ACCOUNT_CATEGORY_INVESTMENT             AccountCategory = 7
 	ACCOUNT_CATEGORY_SAVINGS_ACCOUNT        AccountCategory = 8
 	ACCOUNT_CATEGORY_CERTIFICATE_OF_DEPOSIT AccountCategory = 9
+	ACCOUNT_CATEGORY_ONLINE_FINANCIAL       AccountCategory = 10
 )
 
 var assetAccountCategory = map[AccountCategory]bool{
 	ACCOUNT_CATEGORY_CASH:                   true,
 	ACCOUNT_CATEGORY_CHECKING_ACCOUNT:       true,
 	ACCOUNT_CATEGORY_CREDIT_CARD:            false,
+	ACCOUNT_CATEGORY_ONLINE_FINANCIAL:       false,
 	ACCOUNT_CATEGORY_VIRTUAL:                true,
 	ACCOUNT_CATEGORY_DEBT:                   false,
 	ACCOUNT_CATEGORY_RECEIVABLES:            true,
@@ -37,6 +39,7 @@ var liabilityAccountCategory = map[AccountCategory]bool{
 	ACCOUNT_CATEGORY_CASH:                   false,
 	ACCOUNT_CATEGORY_CHECKING_ACCOUNT:       false,
 	ACCOUNT_CATEGORY_CREDIT_CARD:            true,
+	ACCOUNT_CATEGORY_ONLINE_FINANCIAL:       true,
 	ACCOUNT_CATEGORY_VIRTUAL:                false,
 	ACCOUNT_CATEGORY_DEBT:                   true,
 	ACCOUNT_CATEGORY_RECEIVABLES:            false,
@@ -53,6 +56,11 @@ func (c AccountCategory) IsAsset() bool {
 // IsLiability returns whether the account category is a liability category
 func (c AccountCategory) IsLiability() bool {
 	return liabilityAccountCategory[c]
+}
+
+// SupportsStatementDate returns whether the account category supports statement date.
+func (c AccountCategory) SupportsStatementDate() bool {
+	return c == ACCOUNT_CATEGORY_CREDIT_CARD || c == ACCOUNT_CATEGORY_ONLINE_FINANCIAL
 }
 
 // AccountType represents account type
@@ -182,7 +190,7 @@ type AccountInfoResponse struct {
 func (a *Account) ToAccountInfoResponse() *AccountInfoResponse {
 	var creditCardStatementDate *int
 
-	if a.ParentAccountId == LevelOneAccountParentId && a.Category == ACCOUNT_CATEGORY_CREDIT_CARD {
+	if a.ParentAccountId == LevelOneAccountParentId && a.Category.SupportsStatementDate() {
 		if a.Extend != nil {
 			creditCardStatementDate = a.Extend.CreditCardStatementDate
 		} else {

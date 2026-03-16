@@ -29,11 +29,12 @@ export class AccountCategory implements TypeAndName {
     public static readonly CheckingAccount = new AccountCategory(2, 2, 'Checking Account', true, false, '100');
     public static readonly SavingsAccount = new AccountCategory(8, 3, 'Savings Account', true, false, '100');
     public static readonly CreditCard = new AccountCategory(3, 4, 'Credit Card', false, true, '100');
-    public static readonly VirtualAccount = new AccountCategory(4, 5, 'Virtual Account', true, false, '500');
-    public static readonly DebtAccount = new AccountCategory(5, 6, 'Debt Account', false, true, '600');
-    public static readonly Receivables = new AccountCategory(6, 7, 'Receivables', true, false, '700');
-    public static readonly CertificateOfDeposit = new AccountCategory(9, 8, 'Certificate of Deposit', true, false, '110');
-    public static readonly InvestmentAccount = new AccountCategory(7, 9, 'Investment Account', true, false, '800');
+    public static readonly OnlineFinancialService = new AccountCategory(10, 5, 'Online Financial Service', false, true, '100');
+    public static readonly VirtualAccount = new AccountCategory(4, 6, 'Virtual Account', true, false, '500');
+    public static readonly DebtAccount = new AccountCategory(5, 7, 'Debt Account', false, true, '600');
+    public static readonly Receivables = new AccountCategory(6, 8, 'Receivables', true, false, '700');
+    public static readonly CertificateOfDeposit = new AccountCategory(9, 9, 'Certificate of Deposit', true, false, '110');
+    public static readonly InvestmentAccount = new AccountCategory(7, 10, 'Investment Account', true, false, '800');
 
     public static readonly Default = AccountCategory.Cash;
 
@@ -95,6 +96,10 @@ export class AccountCategory implements TypeAndName {
 
     public static valueOf(type: number): AccountCategory | undefined {
         return AccountCategory.allInstancesByType[type];
+    }
+
+    public static supportsStatementDate(type: number): boolean {
+        return type === AccountCategory.CreditCard.type || type === AccountCategory.OnlineFinancialService.type;
     }
 }
 

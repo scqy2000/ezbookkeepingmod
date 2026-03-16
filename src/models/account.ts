@@ -180,7 +180,7 @@ export class Account implements AccountInfoResponse {
             balance: parentAccount || this.type === AccountType.SingleAccount.type ? this.balance : 0,
             balanceTime: (parentAccount || this.type === AccountType.SingleAccount.type) && this.balanceTime ? this.balanceTime : 0,
             comment: this.comment,
-            creditCardStatementDate: !parentAccount && this.category === AccountCategory.CreditCard.type ? this.creditCardStatementDate : undefined,
+            creditCardStatementDate: !parentAccount && AccountCategory.supportsStatementDate(this.category) ? this.creditCardStatementDate : undefined,
             subAccounts: !parentAccount ? subAccountCreateRequests : undefined,
             clientSessionId: !parentAccount ? clientSessionId : undefined
         };
@@ -213,7 +213,7 @@ export class Account implements AccountInfoResponse {
             balance: parentAccount && (!this.id || this.id === '0') ? this.balance : undefined,
             balanceTime: parentAccount && (!this.id || this.id === '0') ? this.balanceTime : undefined,
             comment: this.comment,
-            creditCardStatementDate: !parentAccount && this.category === AccountCategory.CreditCard.type ? this.creditCardStatementDate : undefined,
+            creditCardStatementDate: !parentAccount && AccountCategory.supportsStatementDate(this.category) ? this.creditCardStatementDate : undefined,
             hidden: !this.visible,
             subAccounts: !parentAccount ? subAccountModifyRequests : undefined,
             clientSessionId: !parentAccount ? clientSessionId : undefined

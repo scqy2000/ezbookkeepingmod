@@ -461,7 +461,7 @@ export const useAccountsStore = defineStore('accounts', () => {
             return null;
         }
 
-        if (mainAccount.category === AccountCategory.CreditCard.type) {
+        if (AccountCategory.supportsStatementDate(mainAccount.category)) {
             return mainAccount.creditCardStatementDate;
         }
 

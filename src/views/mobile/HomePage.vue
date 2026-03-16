@@ -161,6 +161,18 @@
                     </div>
                 </template>
             </f7-list-item>
+
+            <f7-list-item link="/installment/list" chevron-center>
+                <template #media>
+                    <f7-icon f7="calendar_badge_plus"></f7-icon>
+                </template>
+                <template #title>
+                    <div class="padding-top-half">{{ tt('Installments') }}</div>
+                </template>
+                <template #footer>
+                    <div class="overview-transaction-footer padding-bottom-half">{{ tt('Track installment plans and repayments') }}</div>
+                </template>
+            </f7-list-item>
         </f7-list>
 
         <f7-toolbar tabbar icons bottom class="main-tabbar">

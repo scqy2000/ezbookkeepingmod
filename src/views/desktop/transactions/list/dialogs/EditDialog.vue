@@ -456,6 +456,9 @@
                             </v-menu>
                         </v-btn>
                     </v-btn-group>
+                    <v-btn color="primary" variant="tonal" :disabled="loading || submitting"
+                           v-if="canCreateInstallment"
+                           @click="createInstallment">{{ tt('Create Installment') }}</v-btn>
                     <v-btn color="warning" variant="tonal" :disabled="loading || submitting"
                            v-if="mode === TransactionEditPageMode.View && originalTransactionEditable"
                            @click="edit">{{ tt('Edit') }}</v-btn>
@@ -482,6 +485,7 @@ import ConfirmDialog from '@/components/desktop/ConfirmDialog.vue';
 import SnackBar from '@/components/desktop/SnackBar.vue';
 
 import { ref, computed, useTemplateRef, watch, nextTick } from 'vue';
+import { useRouter } from 'vue-router';
 
 import { useI18n } from '@/locales/helpers.ts';
 import {
@@ -516,6 +520,10 @@ import {
     getCurrentUnixTime
 } from '@/lib/datetime.ts';
 import { formatCoordinate } from '@/lib/coordinate.ts';
+import {
+    canCreateInstallmentFromTransaction,
+    getInstallmentCreatePathFromTransaction
+} from '@/lib/installment.ts';
 import { generateRandomUUID } from '@/lib/misc.ts';
 import {
     getTransactionPrimaryCategoryName,
@@ -568,6 +576,7 @@ const props = defineProps<{
 }>();
 
 const { tt } = useI18n();
+const router = useRouter();
 
 const {
     mode,
@@ -655,6 +664,14 @@ const sourceAmountColor = computed<string | undefined>(() => {
 
     return undefined;
 });
+const installmentLiabilityAccount = computed(() =>
+    accountsStore.allVisiblePlainAccounts.find((account) => account.id === transaction.value.sourceAccountId)
+);
+const canCreateInstallment = computed<boolean>(() =>
+    props.type === TransactionEditPageType.Transaction
+        && mode.value === TransactionEditPageMode.View
+        && canCreateInstallmentFromTransaction(transaction.value, installmentLiabilityAccount.value)
+);
 
 const isTransactionModified = computed<boolean>(() => {
     if (mode.value === TransactionEditPageMode.Add) {
@@ -944,6 +961,24 @@ function duplicate(withTime?: boolean, withGeoLocation?: boolean): void {
 
     transaction.value.clearPictures();
     mode.value = TransactionEditPageMode.Add;
+}
+
+function createInstallment(): void {
+    if (!canCreateInstallment.value) {
+        return;
+    }
+
+    if (resolveFunc) {
+        resolveFunc();
+    }
+
+    showState.value = false;
+    void router.push(
+        getInstallmentCreatePathFromTransaction(
+            transaction.value,
+            installmentLiabilityAccount.value,
+        ),
+    );
 }
 
 function edit(): void {

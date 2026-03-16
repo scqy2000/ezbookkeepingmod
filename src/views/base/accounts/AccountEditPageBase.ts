@@ -98,7 +98,7 @@ export function useAccountEditPageBase() {
         return allAvailableDays;
     });
 
-    const isAccountSupportCreditCardStatementDate = computed<boolean>(() => account.value && account.value.category === AccountCategory.CreditCard.type);
+    const isAccountSupportCreditCardStatementDate = computed<boolean>(() => account.value && AccountCategory.supportsStatementDate(account.value.category));
 
     function getCurrentUnixTimeForNewAccount(): number {
         return getSameDateTimeWithCurrentTimezone(parseDateTimeFromUnixTimeWithBrowserTimezone(getCurrentUnixTime())).getUnixTime();

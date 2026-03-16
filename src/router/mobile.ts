@@ -48,6 +48,9 @@ import TagListPage from '@/views/mobile/tags/ListPage.vue';
 import TagGroupListPage from '@/views/mobile/tags/GroupListPage.vue';
 
 import TemplateListPage from '@/views/mobile/templates/ListPage.vue';
+import InstallmentListPage from '@/views/mobile/installments/ListPage.vue';
+import InstallmentEditPage from '@/views/mobile/installments/EditPage.vue';
+import InstallmentDetailPage from '@/views/mobile/installments/DetailPage.vue';
 
 function asyncResolve(component: unknown): (ctx: Router.RouteCallbackCtx) => void {
     return function({ resolve }: { resolve: ({ component }: { component: unknown }) => void }): void {
@@ -184,6 +187,21 @@ const routes: Router.RouteParameters[] = [
     {
         path: '/account/list',
         async: asyncResolve(AccountListPage),
+        beforeEnter: [checkLogin]
+    },
+    {
+        path: '/installment/list',
+        async: asyncResolve(InstallmentListPage),
+        beforeEnter: [checkLogin]
+    },
+    {
+        path: '/installment/add',
+        async: asyncResolve(InstallmentEditPage),
+        beforeEnter: [checkLogin]
+    },
+    {
+        path: '/installment/detail',
+        async: asyncResolve(InstallmentDetailPage),
         beforeEnter: [checkLogin]
     },
     {

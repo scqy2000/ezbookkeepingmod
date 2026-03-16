@@ -788,7 +788,63 @@ func (s *TransactionService) CreateScheduledTransactions(c core.Context, current
 		}
 
 		tagIds := template.GetTagIds()
-		err = s.CreateTransaction(c, transaction, tagIds, nil)
+		userDataDb := s.UserDataDB(template.Uid)
+		err = userDataDb.DoTransaction(c, func(sess *xorm.Session) error {
+			if err := s.isAccountIdValid(transaction); err != nil {
+				return err
+			}
+
+			now := time.Now().Unix()
+			needTransactionUuidCount := 1
+
+			if transaction.Type == models.TRANSACTION_DB_TYPE_TRANSFER_OUT || transaction.Type == models.TRANSACTION_DB_TYPE_TRANSFER_IN {
+				needTransactionUuidCount = 2
+			}
+
+			transactionUuids := s.GenerateUuids(uuid.UUID_TYPE_TRANSACTION, uint16(needTransactionUuidCount))
+
+			if len(transactionUuids) < needTransactionUuidCount {
+				return errs.ErrSystemIsBusy
+			}
+
+			tagIds = utils.ToUniqueInt64Slice(tagIds)
+			needTagIndexUuidCount := uint16(len(tagIds))
+			tagIndexUuids := s.GenerateUuids(uuid.UUID_TYPE_TAG_INDEX, needTagIndexUuidCount)
+
+			if len(tagIndexUuids) < int(needTagIndexUuidCount) {
+				return errs.ErrSystemIsBusy
+			}
+
+			transaction.TransactionId = transactionUuids[0]
+
+			if transaction.Type == models.TRANSACTION_DB_TYPE_TRANSFER_OUT || transaction.Type == models.TRANSACTION_DB_TYPE_TRANSFER_IN {
+				transaction.RelatedId = transactionUuids[1]
+			}
+
+			transaction.TransactionTime = utils.GetMinTransactionTimeFromUnixTime(utils.GetUnixTimeFromTransactionTime(transaction.TransactionTime))
+			transaction.CreatedUnixTime = now
+			transaction.UpdatedUnixTime = now
+
+			transactionTagIndexes := make([]*models.TransactionTagIndex, len(tagIds))
+
+			for i := 0; i < len(tagIds); i++ {
+				transactionTagIndexes[i] = &models.TransactionTagIndex{
+					TagIndexId:      tagIndexUuids[i],
+					Uid:             transaction.Uid,
+					Deleted:         false,
+					TagId:           tagIds[i],
+					TransactionId:   transaction.TransactionId,
+					CreatedUnixTime: now,
+					UpdatedUnixTime: now,
+				}
+			}
+
+			if err := s.doCreateTransaction(c, userDataDb, sess, transaction, transactionTagIndexes, tagIds, nil, nil); err != nil {
+				return err
+			}
+
+			return Installments.HandleScheduledTemplateExecution(c, sess, template, transaction)
+		})
 
 		if err == nil {
 			successCount++
