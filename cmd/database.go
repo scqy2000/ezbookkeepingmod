@@ -141,6 +141,30 @@ func updateAllDatabaseTablesStructure(c *core.CliContext) error {
 
 	log.BootInfof(c, "[database.updateAllDatabaseTablesStructure] transaction picture table maintained successfully")
 
+	err = datastore.Container.UserDataStore.SyncStructs(new(models.InstallmentPlan))
+
+	if err != nil {
+		return err
+	}
+
+	log.BootInfof(c, "[database.updateAllDatabaseTablesStructure] installment plan table maintained successfully")
+
+	err = datastore.Container.UserDataStore.SyncStructs(new(models.InstallmentItem))
+
+	if err != nil {
+		return err
+	}
+
+	log.BootInfof(c, "[database.updateAllDatabaseTablesStructure] installment item table maintained successfully")
+
+	err = datastore.Container.UserDataStore.SyncStructs(new(models.InstallmentAccountRule))
+
+	if err != nil {
+		return err
+	}
+
+	log.BootInfof(c, "[database.updateAllDatabaseTablesStructure] installment account rule table maintained successfully")
+
 	err = datastore.Container.UserDataStore.SyncStructs(new(models.UserCustomExchangeRate))
 
 	if err != nil {

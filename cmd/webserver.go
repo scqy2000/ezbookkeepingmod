@@ -409,6 +409,19 @@ func startWebServer(c *core.CliContext) error {
 				apiV1Route.POST("/transaction/pictures/remove_unused.json", bindApi(api.TransactionPictures.TransactionPictureRemoveUnusedHandler))
 			}
 
+			// Installments
+			apiV1Route.GET("/installments/list.json", bindApi(api.InstallmentPlans.PlanListHandler))
+			apiV1Route.GET("/installments/get.json", bindApi(api.InstallmentPlans.PlanGetHandler))
+			apiV1Route.POST("/installments/add.json", bindApi(api.InstallmentPlans.PlanCreateHandler))
+			apiV1Route.POST("/installments/modify.json", bindApi(api.InstallmentPlans.PlanModifyHandler))
+			apiV1Route.POST("/installments/delete.json", bindApi(api.InstallmentPlans.PlanDeleteHandler))
+			apiV1Route.GET("/installments/account_rules/list.json", bindApi(api.InstallmentPlans.AccountRuleListHandler))
+			apiV1Route.GET("/installments/account_rules/get.json", bindApi(api.InstallmentPlans.AccountRuleGetHandler))
+			apiV1Route.POST("/installments/account_rules/save.json", bindApi(api.InstallmentPlans.AccountRuleSaveHandler))
+			apiV1Route.POST("/installments/account_rules/delete.json", bindApi(api.InstallmentPlans.AccountRuleDeleteHandler))
+			apiV1Route.POST("/installments/items/pay.json", bindApi(api.InstallmentPlans.PayItemHandler))
+			apiV1Route.POST("/installments/items/unpay.json", bindApi(api.InstallmentPlans.UnpayItemHandler))
+
 			// Transaction Categories
 			apiV1Route.GET("/transaction/categories/list.json", bindApi(api.TransactionCategories.CategoryListHandler))
 			apiV1Route.GET("/transaction/categories/get.json", bindApi(api.TransactionCategories.CategoryGetHandler))
